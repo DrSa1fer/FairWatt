@@ -7,7 +7,7 @@ from pathlib import Path
 
 def load_data(data_folder: Optional[Path] = None) -> list[dict]:
     if data_folder is None:
-        data_folder = Path("src/data")
+        data_folder = Path("../data")
 
     datasets = ["commercial.json", "personal.json"]
     result = []
