@@ -2,7 +2,7 @@ import sqlalchemy
 from sqlalchemy import Sequence
 from sqlalchemy.orm import relationship
 
-from .db_session import SqlAlchemyBase
+from src.db.session import SqlAlchemyBase
 
 
 class Facility(SqlAlchemyBase):

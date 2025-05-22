@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy import Sequence
 
-from .db_session import SqlAlchemyBase
+from src.db.session import SqlAlchemyBase
 
 
 class Client(SqlAlchemyBase):
