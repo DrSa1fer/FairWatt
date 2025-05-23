@@ -1,4 +1,6 @@
 import json
+
+import numpy as np
 import pandas as pd
 
 from pathlib import Path
@@ -7,13 +9,13 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.pipeline import Pipeline
 
-from ..data.ml_jb import load_model_train
-from ..data.ml_jb import load_scaler_train
+from ..data.ml_jb import load_model
+from ..data.ml_jb import load_scaler
 
 from ..features.build_features import build_features
 
-def _test_dataset() -> pd.DataFrame:
-    with open(Path("../data/test/dataset_test.json"), "r") as f:
+def _test_dataset() -> (np.array, pd.DataFrame):
+    with open(Path("../data/test/raw_test.json"), "r") as f:
         data = json.load(f)
 
     return build_features(data)
@@ -21,8 +23,8 @@ def _test_dataset() -> pd.DataFrame:
 def test():
     X, y = _test_dataset()
 
-    scaler = load_scaler_train()
-    model = load_model_train()
+    scaler = load_scaler()
+    model = load_model()
 
     pipeline = Pipeline(steps=[
         ("preprocessor", scaler),
