@@ -64,26 +64,3 @@ def analyze(consume : Consume, perfect : Consume) -> float:
 
 def avg_analyze(consume : Consume, perfect : list[Consume]) -> float:
     return avg([analyze(consume, i) for i in perfect])
-
-# todo
-# find perfect chart to analyze
-
-#tests
-# data0 = [0.45, 0.41, 0.38, 0.34, 0.39, 0.45, 1.89, 2.78, 3.34, 2.56, 2.01, 1.67, 1.45, 1.23, 1.12, 1.45, 2.34, 3.45, 4.01, 3.78, 3.23, 2.56, 1.67, 1.12]
-# data1 = [2.89, 2.78, 2.67, 2.56, 2.45, 2.78, 3.56, 7.12, 13.45, 18.12, 20.34, 21.56, 21.23, 20.89, 20.12, 18.78, 17.12, 15.34, 13.12, 10.45, 7.89, 5.34, 3.78, 2.89]
-
-# print("\n[load factor]:")
-# print("personal = {", calc_load_factor(data0), "}")
-# print("commercial = {", calc_load_factor(data1), "}")
-#
-# print("\n[form factor]:")
-# print("personal = {", calc_form_factor(data0), "}")
-# print("commercial = {", calc_form_factor(data1), "}")
-#
-# print("\n[variation index]:")
-# print("personal = {", calc_variation_index(data0), "}")
-# print("commercial = {", calc_variation_index(data1), "}")
-#
-# print("\n[analyze]:")
-# print("personal = {", analyze(data0, data0), "}, must be 0.45")
-# print("commercial = {", analyze(data1, data0), "}, must be 0.95")
