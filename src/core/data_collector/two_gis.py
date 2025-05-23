@@ -7,7 +7,7 @@ def companies_at_address(address: str, api_gis: str) -> list[TwoGis]:
     :param address: Полный адрес
     :param  api_gis: API ключ 2gis - dev.2gis.ru
 
-    :
+    :return list[TwoGis]: Список компаний если найдены
     """
     base_url = "https://catalog.api.2gis.com/3.0/"
     method = "items"
