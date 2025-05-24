@@ -10,4 +10,4 @@ class Settings(BaseSettings):
     ai_base_url: str
     ai_model: str
 
-    model_config = SettingsConfigDict(env_file='.conf', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file='../.conf', env_file_encoding='utf-8')
