@@ -8,8 +8,7 @@ from src.core.data_collector.two_gis import generate_map_for_building
 from src.core.data_collector.avito import find_avito_adverts_by_address
 from src.core.ai_insights import check_adverts
 
-router = APIRouter(prefix="/dataCollect")
-
+router = APIRouter(prefix="/dataCollect", tags=["Data Collector"])
 
 @router.get("/legal")
 async def data_collect_legal(full_name: str) -> LegalData:
