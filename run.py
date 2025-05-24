@@ -3,11 +3,12 @@ from uvicorn import run
 
 from src.api.routers import meters
 from src.api.routers import employees
-from src.db.session import init, dispose
+from src.db.session import init, dispose, session
 
 
 def main():
     init("postgresql+psycopg2://postgres:1234@localhost:5432/FairWattDB") # init connection
+    session().commit()
 
     app = FastAPI(
         title="FairWatt API",

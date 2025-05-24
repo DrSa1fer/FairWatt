@@ -68,9 +68,6 @@ async def api_meters(page: int = 0, per_page: int = 10) -> List[MeterModel]:
                 tariffPrice=tariff.Price,
                 meterDetails=MeterDetails(
                     square=facility.Square,
-                    hasElectricHeating=facility.hasElectricHeating,
-                    hasElectricStove=facility.hasElectricStove,
-                    facilityName=facility.SettlementKind.Name,
                     )
                 )
         )

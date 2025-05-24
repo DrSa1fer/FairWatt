@@ -14,3 +14,4 @@ class Trip(Base):
     Employee            = relationship("Employee")
     FromTime            = mapped_column(DateTime, nullable=False)
     ToTime              = mapped_column(DateTime, nullable=False)
+

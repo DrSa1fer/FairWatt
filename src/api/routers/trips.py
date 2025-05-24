@@ -17,6 +17,8 @@ async def trip(trip_id: int) -> AWTrip:
     s = session()
     t = s.get(DBTrip, trip_id)
 
+    if t
+
 
 
 

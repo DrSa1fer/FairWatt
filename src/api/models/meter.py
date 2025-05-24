@@ -5,8 +5,6 @@ FACILITY = Literal["house", "flat"]
 
 class MeterDetails(BaseModel):
     square: int
-    hasElectricHeating: bool
-    hasElectricStove: bool
     facilityName: FACILITY
 
 class Meter(BaseModel):

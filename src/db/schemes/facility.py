@@ -15,4 +15,4 @@ class Facility(Base):
     Rooms               = mapped_column(Integer, nullable=True)
     Residents           = mapped_column(Integer, nullable=True)
     Square              = mapped_column(Integer, nullable=True)
-    Address             = mapped_column(String(length=50), nullable=False)
+    Address             = mapped_column(String(length=150), nullable=False)

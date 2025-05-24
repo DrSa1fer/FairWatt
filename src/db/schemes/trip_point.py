@@ -11,7 +11,7 @@ class TripPoint(Base):
     TripID = mapped_column(Integer, ForeignKey("Trip.TripID"))
     FacilityID = mapped_column(Integer, ForeignKey("Facility.FacilityID"))
 
-    TripFacilityID      = mapped_column(Integer, Sequence("tripPoint_seq"), primary_key=True)
+    TripPoint           = mapped_column(Integer, Sequence("tripPoint_seq"), primary_key=True)
     Trip                = relationship("Trip")
     Facility            = relationship("Facility")
     IsFirst             = mapped_column(Boolean, nullable=False)

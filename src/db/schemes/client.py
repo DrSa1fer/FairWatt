@@ -13,6 +13,6 @@ class Client(Base):
     FirstName   = mapped_column(String(length=25), nullable=False)
     FatherName  = mapped_column(String(length=25), nullable=False)
     Rating      = mapped_column(Float, nullable=False)
-    Email       = mapped_column(String(length=25), unique=True, nullable=True)
+    Email       = mapped_column(String(length=35), unique=True, nullable=True)
     Phone       = mapped_column(BigInteger, unique=True)
 

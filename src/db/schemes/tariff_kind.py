@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, String
 from sqlalchemy import Sequence
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import mapped_column, Mapped
 
 from .__base__ import Base
 
