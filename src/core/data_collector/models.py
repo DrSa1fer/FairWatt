@@ -19,3 +19,8 @@ TYPE_ = Literal["branch",
 class TwoGis(BaseModel):
     type_ : TYPE_
     purpose_name: str
+
+class AdvertInfo(BaseModel):
+    title: str
+    description: str
+    url: str
