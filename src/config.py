@@ -11,3 +11,5 @@ class Settings(BaseSettings):
     ai_model: str
 
     model_config = SettingsConfigDict(env_file='../.conf', env_file_encoding='utf-8')
+
+config = Settings()
