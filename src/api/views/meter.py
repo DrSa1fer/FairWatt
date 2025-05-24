@@ -11,17 +11,24 @@ class Geodata(BaseModel):
     latitude : float
     longitude : float
 
+
+class Client():
+    client_id : int
+    name : str
+    phone : str
+    email : Optional[str]
+
 class Meter(BaseModel):
-    meter_id: int
-    facility_id: int
-    name:  Optional[str]
-    rating:  Optional[float]
-    address:  Optional[str]
+    meter_id    : int
+    facility_id : int
+    name        : Optional[str]
+    rating      : Optional[float]
+    address     : Optional[str]
 
     meter_details : MeterDetail
 
-    geodata:  Optional[Geodata]
-    consumption: Optional[list[float]]
-    is_daily: bool
+    geodata     : Optional[Geodata]
+    consumption : Optional[list[float]]
+    is_daily    : bool
     verified_status : Optional[str]
-    is_first:  Optional[bool]
+    is_first    :  Optional[bool]
