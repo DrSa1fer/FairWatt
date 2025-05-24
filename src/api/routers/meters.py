@@ -17,7 +17,7 @@ from src.db.session import session
 
 router = APIRouter(tags=["meters"])
 
-def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
+def _new_meter(s: Session, meter, consumption) -> AWMeter:
     client: Client = meter.Client
     facility: Facility = meter.Facility
     verified: Verified | None = s.query(Verified).filter(Verified.FacilityID == facility.FacilityID).first()
@@ -26,23 +26,28 @@ def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
     return AWMeter(
         meter_id=meter.MeterID,
         facility_id=facility.FacilityID,
-        name=f"{client.LastName} {client.FirstName} {client.FatherName}",
         rating=100 - (client.Rating * 100),
-        address=facility.Address,
+        address=facility.Address.strip(),
         meter_details=MeterDetail(
             resident_count=facility.Residents,
             room_count=facility.Rooms,
             square=facility.Square,
-            facility_type_name=facility.FacilityKind.Name,
+            facility_type_name=facility.FacilityKind.Name.strip(),
             tariff_price=tariff.Price,
-            tariff_type_name=tariff.TariffKind.Name
+            tariff_type_name=tariff.TariffKind.Name.strip()
+        ),
+        client=Client(
+            client_id=client.ClientID,
+            name=f"{client.LastName} {client.FirstName} {client.FatherName}",
+            phone=client.Phone,
+            email=client.Email
         ),
         geodata=Geodata(
             longitude=facility.Longitude,
             latitude=facility.Latitude
         ),
         consumption=consumption.Data if consumption is not None else None,
-        is_daily=is_daily,
+        is_iot=meter.IsIot,
         is_first=None,
         verified_status=verified.Grade.Name if verified is not None else None
     )
@@ -64,7 +69,7 @@ def get_last_consumption(s: Session, meter_id: int) -> tuple[Type[DailyConsumpti
 
     return cons, is_daily
 
-@router.get("/meter")
+@router.get("/meters/{meter_id}")
 async def api_meter(meter_id: int) -> AWMeter | str:
     s = session()
     row = s.get(DBMeter, meter_id)

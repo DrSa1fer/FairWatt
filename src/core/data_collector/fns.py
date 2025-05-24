@@ -30,7 +30,6 @@ def check_legal_entity(full_name: str) -> tuple[bool, str | None]:
         return False, None
 
     bs4 = BeautifulSoup(response, "lxml")
-    bs4.find_all("div", class_="org_list")
 
     result = bool(bs4.find_all("div", class_="org_list"))
 

@@ -6,7 +6,7 @@ from src.db.session import session
 
 router = APIRouter(tags=["employees"])
 
-@router.get("/employee")
+@router.get("/employees/{employee_id}")
 async def employee(employee_id: int) -> AWEmployee:
     s = session()
     row = s.get(DBEmployee, (employee_id,))

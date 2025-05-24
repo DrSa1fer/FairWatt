@@ -14,23 +14,23 @@ class Geodata(BaseModel):
     longitude : float
 
 
-class Client():
+class Client(BaseModel):
     client_id : int
     name : str
     phone : str
     email : Optional[str]
 
 class Meter(BaseModel):
-    meter_id    : int
-    facility_id : int
-    name        : Optional[str]
-    rating      : Optional[float]
-    address     : Optional[str]
+    meter_id        : int
+    facility_id     : int
+    rating          : Optional[float]
+    address         : Optional[str]
 
-    meter_details : MeterDetail
+    is_iot          : bool
+    consumption     : Optional[list[float]]
 
-    geodata     : Optional[Geodata]
-    consumption : Optional[list[float]]
-    is_daily    : bool
+    client          : Client
+    meter_details   : MeterDetail
+    geodata         : Optional[Geodata]
     verified_status : Optional[str]
-    is_first    :  Optional[bool]
+    is_first        : Optional[bool]

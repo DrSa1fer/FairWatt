@@ -19,7 +19,7 @@ async def data_collect_legal(full_name: str) -> LegalData:
 @router.get("/2gis")
 async def data_collect_2gis(address: str) -> TwoGisData:
     companies: list[TwoGis] = companies_at_address(address, config.gis_api)
-
+    print(companies)
     branches: list[TwoGisBranch] = []
 
     if len(companies) == 0:
