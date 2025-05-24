@@ -5,7 +5,7 @@ def companies_at_address(address: str, api_gis: str) -> list[TwoGis]:
     """
     Поиск компаний на адресе
     :param address: Полный адрес
-    :param  api_gis: API ключ 2gis - dev.2gis.ru
+    :param api_gis: API ключ 2gis - dev.2gis.ru
 
     :return list[TwoGis]: Список компаний если найдены
     """
@@ -39,9 +39,9 @@ def companies_at_address(address: str, api_gis: str) -> list[TwoGis]:
 
 def generate_map_for_building(building_id: str) -> str:
     """
-    Поиск компаний на адресе
+    Сгенерировать ссылку на здание в 2gis
     :param building_id: 2gis id здания
 
-    :return list[TwoGis]: Список компаний если найдены
+    :return str: Ссылка на карту
     """
     return f"https://2gis.ru/geo/items/{building_id}"
