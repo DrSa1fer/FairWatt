@@ -6,7 +6,7 @@ def cords_of_address(address: str, api_ya_geocode: str) -> tuple[float, float]:
     :param address: Полный адрес
     :param  api_ya_geocode: API ключ yandex геокодер - developer.tech.yandex.ru
 
-    :return tuple[float]: Координаты или 0,0 при ошибке
+    :return tuple[float]: Координаты или 0, 0 при ошибке
     """
     base_url = "https://geocode-maps.yandex.ru/v1"
 
@@ -18,12 +18,12 @@ def cords_of_address(address: str, api_ya_geocode: str) -> tuple[float, float]:
     )
 
     if response.status_code != 200:
-        return (0,0) # TODO: Ошибка
+        return 0, 0
 
     feature_member = response.json()["response"]["GeoObjectCollection"]["featureMember"]
 
     if not len(feature_member):
-         return (0,0) # TODO: Ошибка
+         return 0, 0
 
     x, y = feature_member[0]["GeoObject"]["Point"]["pos"].split()
-    return (float(x), float(y))
+    return float(x), float(y)

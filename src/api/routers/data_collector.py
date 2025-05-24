@@ -1,9 +1,8 @@
 from fastapi import APIRouter
-from src.api.models.open_data import LegalData, TwoGisData, AvitoData
+from src.api.models.open_data import LegalData, TwoGisData, AvitoData, TwoGisBranch
 from src.config import config
 from src.core.data_collector.fns import check_legal_entity
 from src.core.data_collector.models import TwoGis, AdvertInfo
-from src.core.data_collector.ya_api import panorama_url_by_address
 from src.core.data_collector.two_gis import companies_at_address
 from src.core.data_collector.two_gis import generate_map_for_building
 from src.core.data_collector.avito import find_avito_adverts_by_address
@@ -19,18 +18,21 @@ async def data_collect_legal(full_name: str) -> LegalData:
 
 
 @router.get("/2gis")
-async def data_collect_2gis(address: str) -> list[TwoGisData]:
+async def data_collect_2gis(address: str) -> TwoGisData:
     companies: list[TwoGis] = companies_at_address(address, config.gis_api)
 
-    results: list[TwoGisData] = []
+    branches: list[TwoGisBranch] = []
+
+    if len(companies) == 0:
+        return TwoGisData(url=None, branches=None)
 
     for company in companies:
-        results.append(TwoGisData(
-            url=generate_map_for_building(company.building_id),
+        branches.append(TwoGisBranch(
             name=company.name,
             purpose_name=company.purpose_name
         ))
-    return results
+
+    return TwoGisData(url=generate_map_for_building(companies[0].building_id), branches=branches)
 
 
 @router.get("/avito")
