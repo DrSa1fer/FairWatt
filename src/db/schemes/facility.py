@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, ForeignKey, Boolean
+from sqlalchemy import Integer, String, ForeignKey, Boolean, Float
 from sqlalchemy import Sequence
 from sqlalchemy.orm import relationship, mapped_column
 
@@ -16,3 +16,5 @@ class Facility(Base):
     Residents           = mapped_column(Integer, nullable=True)
     Square              = mapped_column(Integer, nullable=True)
     Address             = mapped_column(String(length=150), nullable=False)
+    Longitude           = mapped_column(Float, nullable=True)
+    Latitude            = mapped_column(Float, nullable=True)
