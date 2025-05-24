@@ -9,10 +9,10 @@ class Facility(Base):
     __tablename__ = 'Facility'
 
     FacilityKindID      = mapped_column(Integer, ForeignKey("FacilityKind.FacilityKindID"))
-    SettlementKindID    = mapped_column(Integer, ForeignKey("SettlementKind.SettlementKindID"))
 
     FacilityID          = mapped_column(Integer, Sequence("facility_seq"), primary_key=True)
     FacilityKind        = relationship('FacilityKind')
-    SettlementKind      = relationship('SettlementKind')
+    Rooms               = mapped_column(Integer, nullable=True)
+    Residents           = mapped_column(Integer, nullable=True)
     Square              = mapped_column(Integer, nullable=True)
     Address             = mapped_column(String(length=50), nullable=False)

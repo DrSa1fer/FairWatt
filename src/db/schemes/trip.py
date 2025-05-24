@@ -8,8 +8,9 @@ from .__base__ import Base
 class Trip(Base):
     __tablename__ = 'Trip'
 
+    EmployeeID          = mapped_column(Integer, ForeignKey("Employee.EmployeeID"))
+
     TripID              = mapped_column(Integer, Sequence("trip_seq"), primary_key=True)
-    FirstName           = mapped_column(String(length=25))
-    LastName            = mapped_column(String(length=25))
+    Employee            = relationship("Employee")
     FromTime            = mapped_column(DateTime, nullable=False)
     ToTime              = mapped_column(DateTime, nullable=False)

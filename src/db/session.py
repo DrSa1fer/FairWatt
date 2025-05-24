@@ -16,7 +16,8 @@ from .schemes import monthly_consumption
 from .schemes import trip
 from .schemes import facility
 from .schemes import verified
-from .schemes import trip_facility
+from .schemes import trip_point
+from .schemes import employee
 
 __session : Session | None = None
 
@@ -26,7 +27,7 @@ def init(con_string : str) -> None:
     Base.metadata.create_all(engine)
     __session = Session(engine)
 
-def free():
+def dispose():
     global __session
     if __session is None:
         raise RuntimeError("DB session is not init")
