@@ -12,5 +12,5 @@ class DailyConsumption(Base):
     DailyConsumptionID = mapped_column(Integer, Sequence("dailyConsumption_seq"), primary_key=True)
     Meter = relationship('Meter')
     Rating = mapped_column(Float, nullable=True)
-    Date = mapped_column(Date, primary_key=True)
+    Date = mapped_column(Date)
     Data = mapped_column(ARRAY(Float))

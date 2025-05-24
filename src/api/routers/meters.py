@@ -1,27 +1,31 @@
 import random
-from typing import List, Type
+from typing import List, Union
 
 import fastapi
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
-from src.api.views.meter import Meter as AWMeter, MeterDetail, Geodata, Client
+from src.db.schemes.facility import Facility as DBFacility
 from src.db.schemes.client import Client as DBClient
+from src.db.schemes.meter import Meter as DBMeter
+
 from src.db.schemes.daily_consumption import DailyConsumption
 from src.db.schemes.monthly_consumption import MonthlyConsumption
-from src.db.schemes.facility import Facility
-from src.db.schemes.meter import Meter as DBMeter
 from src.db.schemes.tariff import Tariff
+
+from src.api.views.meter import Meter as AWMeter, MeterDetail, Geodata, Client
 from src.db.schemes.verified import Verified
 from src.db.session import session
 
-router = APIRouter(tags=["meters"])
+router = APIRouter(prefix="/meters", tags=["Meters"])
 
-def _new_meter(s: Session, meter, consumption) -> AWMeter:
+
+def _new_meter(s: Session, meter : AWMeter, consumption) -> AWMeter:
     client: DBClient = meter.Client
-    facility: Facility = meter.Facility
-    verified: Verified | None = s.query(Verified).filter(Verified.FacilityID == facility.FacilityID).first()
+    facility: DBFacility = meter.Facility
     tariff: Tariff = meter.Tariff
+
+    verified: Verified | None = s.query(Verified).filter(Verified.FacilityID == facility.FacilityID).first()
 
     return AWMeter(
         meter_id=meter.MeterID,
@@ -39,7 +43,7 @@ def _new_meter(s: Session, meter, consumption) -> AWMeter:
         client=Client(
             client_id=client.ClientID,
             name=f"{client.LastName} {client.FirstName} {client.FatherName}",
-            phone=str(client.Phone),
+            phone=client.Phone,
             email=client.Email
         ),
         geodata=Geodata(
@@ -52,29 +56,33 @@ def _new_meter(s: Session, meter, consumption) -> AWMeter:
         verified_status=verified.Grade.Name if verified is not None else None
     )
 
-def get_last_consumption(s: Session, meter_id: int, is_iot: bool) -> Type[DailyConsumption] | Type[MonthlyConsumption] | None:
-    return \
-        (s.query(MonthlyConsumption).filter(MonthlyConsumption.MeterID == meter_id).order_by(MonthlyConsumption.Date.desc()).first()) \
-        if is_iot else \
-        (s.query(DailyConsumption).filter(DailyConsumption.MeterID == meter_id).order_by(DailyConsumption.Date.desc()).first())
 
-@router.get("/meters/{meter_id}")
-async def api_meter(meter_id: int) -> AWMeter | str:
-    s = session()
-    row: DBMeter = s.get(DBMeter, meter_id)
+@router.get("/{meter_id}")
+async def api_meter(meter_id: int) -> AWMeter:
+    try:
+        s = session()
+    except:
+        raise fastapi.HTTPException(500)
+
+    row = s.get(DBMeter, meter_id)
 
     if not row:
         raise HTTPException(status_code=404, detail="Meter not found")
 
-    cons = get_last_consumption(s, meter_id, row.IsIot)
+    if row.IsIot:
+        tmp = s.query(DailyConsumption).filter(DailyConsumption.MeterID == meter_id)
+    else:
+        tmp = s.query(MonthlyConsumption).filter(MonthlyConsumption.MeterID == meter_id)
 
-    return _new_meter(s, row, cons)
+    if not tmp:
+        raise fastapi.HTTPException(404)
 
-@router.get("/meters")
+    return _new_meter(s, row, tmp.first())
+
+
+@router.get("/")
+@router.get("/list")
 async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
-    if random.randint(0, 1000000) == 418:
-        raise fastapi.HTTPException(418, "U win!")
-
     try:
         s = session()
     except RuntimeError:
@@ -83,10 +91,17 @@ async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
     if page < 1 or per_page < 1:
         raise fastapi.HTTPException(400)
 
-    meters: List[AWMeter] = []
+    meters = []
 
-    for row in s.query(DBMeter).offset((page - 1) * per_page).limit(per_page).all():
-        cons = get_last_consumption(s, row.MeterID, row.IsIot)
-        meters.append(_new_meter(s, row, cons))
+    for row in (s.query(DBMeter).offset((page - 1) * per_page).limit(per_page)):
+        if row.IsIot:
+            tmp = s.query(DailyConsumption).filter(DailyConsumption.MeterID == row.MeterID)
+        else:
+            tmp = s.query(MonthlyConsumption).filter(MonthlyConsumption.MeterID == row.MeterID)
+
+        if not tmp:
+            raise fastapi.HTTPException(404)
+
+        meters.append(_new_meter(s, row, tmp.first()))
 
     return meters

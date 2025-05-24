@@ -1,9 +1,13 @@
 from fastapi import FastAPI
+from sqlalchemy import text
 from uvicorn import run
 
 from src.api.routers import meters, employees, trips, data_collector, statistics
 from src.config import config
-from src.db.session import init, dispose
+from src.db.schemes.trip_point import TripPoint
+from src.db.session import init, dispose, session
+
+
 
 
 def main():

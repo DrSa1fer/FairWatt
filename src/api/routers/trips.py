@@ -1,31 +1,40 @@
 from datetime import datetime
+from typing import Optional
+
+import fastapi
 from fastapi import APIRouter, HTTPException
 
+from src.api.views.trip import TripPoint as AWTripPoint
+from src.api.views.trip import Trip as AWTrip
 from src.api.models.trip import Trip as AMTrip
-from src.api.views.trip import Trip as AWTrip, TripPoint as AWTripPoint
+
 from src.db.schemes.trip import Trip as DBTrip
 from src.db.schemes.trip_point import TripPoint as DBTripPoint
 
 from src.db.session import session
 
-router = APIRouter(tags=["trips"])
+router = APIRouter(prefix="/trips", tags=["Trips"])
 
-@router.get("/trip")
+@router.get("/{trip_id}")
 async def trip(trip_id: int) -> AWTrip:
-    s = session()
-    t = s.get(DBTrip, trip_id)
+    try:
+        s = session()
+    except:
+        raise fastapi.HTTPException(500)
 
-    if not t:
+    tmp = s.get(DBTrip, trip_id)
+
+    if not tmp:
         raise HTTPException(status_code=404, detail="Trip not found")
 
-    db_points = s.query(DBTripPoint).filter(DBTripPoint.TripID == trip_id).all()
+    points = s.query(DBTripPoint).filter(DBTripPoint.TripID == trip_id).all()
 
-    if not db_points:
-        raise HTTPException(status_code=404, detail="Trip not found")
+    if not len(points):
+        raise HTTPException(status_code=405, detail="Trip points missing")
 
     points: list[AWTripPoint] = []
 
-    for point in db_points:
+    for point in points:
         points.append(AWTripPoint(
             facility_id=point.FacilityID,
             is_first=point.IsFirst
@@ -33,48 +42,47 @@ async def trip(trip_id: int) -> AWTrip:
 
     return AWTrip(
         trip_id=trip_id,
-        employee_id=t.EmployeeID,
-        from_time=t.FromTime,
-        to_time=t.ToTime,
+        employee_id=tmp.EmployeeID,
+        from_time=tmp.FromTime,
+        to_time=tmp.ToTime,
         points=points,
     )
 
-@router.put("/updateTripStartTime")
-async def start_update(trip_id: int, start_time: datetime):
+@router.put("/update/{trip_id}")
+async def start_update(trip_id: int, start_time: Optional[datetime] = None, end_time: Optional[datetime] = None):
     s = session()
     t = s.get(DBTrip, trip_id)
 
     if not t:
         raise HTTPException(status_code=404, detail="Trip not found")
 
-    t.StartTime = start_time
+    if start_time:
+        t.FromTime = start_time
+
+    if end_time:
+        t.ToTime = end_time
+
     s.commit()
 
-@router.put("/updateTripEndTime")
-async def end_update(trip_id: int, end_time: datetime):
-    s = session()
-    t = s.get(DBTrip, trip_id)
-
-    if not t:
-        raise HTTPException(status_code=404, detail="Trip not found")
-
-    t.ToTime = end_time
-    s.commit()
-
-
-@router.post("/createTrip")
+@router.post("/new")
 async def new_trip(body : AMTrip) -> None:
     s = session()
 
-    s.add(DBTrip(
+    print(body)
+
+    tmp = DBTrip(
         EmployeeID=body.employee_id,
         FromTime=body.from_time,
         ToTime=body.to_time
-    ))
+    )
+
+    s.add(tmp)
+    s.commit()
+    s.refresh(tmp)
 
     for i in body.points:
         s.add(DBTripPoint(
-            TripID=body.trip_id,
+            TripID=tmp.TripID,
             FacilityID=i.facility_id,
             IsFirst=i.is_first
         ))

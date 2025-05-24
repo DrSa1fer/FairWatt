@@ -17,7 +17,7 @@ class Geodata(BaseModel):
 class Client(BaseModel):
     client_id : int
     name : str
-    phone : str
+    phone : int
     email : Optional[str]
 
 class Meter(BaseModel):
