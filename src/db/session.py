@@ -19,7 +19,7 @@ from .schemes import employee
 
 __session : Session | None = None
 
-def init(con_string : str) -> None:
+def db_init(con_string : str) -> None:
     global __session
     engine  = create_engine(con_string)
     Base.metadata.create_all(engine)

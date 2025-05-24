@@ -1,0 +1,12 @@
+# Postgres configuration
+pg_dsn = postgresql+psycopg2://postgres:postgres@localhost:5432/FairWattDB
+
+# Web App
+api_host = 0.0.0.0
+api_port = 8000
+
+# More: https://dev.2gis.ru/api
+gis_api =
+
+# More: https://yandex.ru/maps-api/docs/geocoder-api/index.html
+api_ya_geocode =

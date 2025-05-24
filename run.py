@@ -1,13 +1,16 @@
 from fastapi import FastAPI
 from uvicorn import run
 
+from src.config import Settings
 from src.api.routers import meters
 from src.api.routers import employees
-from src.db.session import init, dispose, session
+from src.db.session import db_init, dispose, session
 
 
 def main():
-    init("postgresql+psycopg2://postgres:1234@localhost:5432/FairWattDB") # init connection
+    config = Settings()
+
+    db_init(config.pg_dsn)
     session().commit()
 
     app = FastAPI(
@@ -17,7 +20,7 @@ def main():
     app.include_router(meters.router, prefix="/api/v1")
     app.include_router(employees.router, prefix="/api/v1")
 
-    run(app, host="0.0.0.0", port=8000, reload=False)
+    run(app, host=config.api_host, port=config.api_port, reload=False)
 
     dispose() # dispose connection
 
