@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from sqlalchemy.orm import joinedload
 
@@ -7,6 +7,8 @@ from src.db.schemes.meter import Meter
 from src.db.schemes.verified import Verified
 from src.db.schemes.verified_grade import VerifiedGrade
 from src.db.schemes.facility import Facility
+from src.db.schemes.daily_consumption import DailyConsumption
+from src.db.schemes.monthly_consumption import MonthlyConsumption
 
 from src.db.session import session
 
@@ -14,6 +16,7 @@ router = APIRouter(tags=["statistics"])
 
 @router.get("/questionableClients")
 async def questionable_client_count() -> int:
+    # TODO: Проверить имя в БД
     grade_id = session().query(VerifiedGrade).filter(VerifiedGrade.Name == "Коммерческое").fisrt().VerifiedGradeID
 
     return (session()
@@ -29,87 +32,89 @@ async def questionable_client_count() -> int:
 
 
 @router.get("/averageFacilityConsumption")
-async def average_facility_consumption(is_daily: bool = False) -> float:
+async def average_facility_consumption() -> float:
     s = session()
 
-    consumption_attr = 'DailyConsumptions' if is_daily else 'MonthlyConsumptions'
+    facilities = s.query(Facility).options(joinedload(Facility.Meters)).all()
+    facility_averages = []
 
-    sum_facilities = 0.0
-    facilities = s.query(Facility).options(
-        joinedload(Facility.Meters).joinedload(getattr(Meter, consumption_attr))
-    ).all()
-
-    facility_count = 0
     for facility in facilities:
-        meters = facility.Meters
-        if not meters:
-            continue
-        sum_meter = 0.0
-        meter_count = 0
-        for meter in meters:
-            consumptions = getattr(meter, consumption_attr)
-            if not consumptions:
-                continue
-            sum_consumption = 0.0
-            for cons in consumptions:
-                sum_consumption += sum(cons.Data) / len(cons.Data)
-            sum_meter += sum_consumption / len(consumptions)
-            meter_count += 1
-        if meter_count > 0:
-            sum_facilities += sum_meter / meter_count
-            facility_count += 1
+        meters = facility.Meters or []
+        meter_averages = []
 
-    return (sum_facilities / facility_count) if facility_count > 0 else 0.0
+        for meter in meters:
+            cons_model = DailyConsumption if meter.IsIot else MonthlyConsumption
+            latest_cons = (
+                s.query(cons_model)
+                .filter(cons_model.MeterID == meter.MeterID)
+                .order_by(cons_model.Date.desc())
+                .first()
+            )
+            if not latest_cons:
+                continue
+            avg_consumption = sum(latest_cons.Data) / len(latest_cons.Data)
+            meter_averages.append(avg_consumption)
+
+        if meter_averages:
+            facility_averages.append(sum(meter_averages) / len(meter_averages))
+
+    return (sum(facility_averages) / len(facility_averages)) if facility_averages else 0.0
 
 
 
 @router.get("/averageFlatConsumption/{facility_id}")
-async def average_flat_consumption(facility_id: int, is_daily: bool = False) -> float:
+async def average_flat_consumption(facility_id: int) -> float:
     s = session()
 
-    consumption_attr = 'DailyConsumptions' if is_daily else 'MonthlyConsumptions'
+    facility = (
+        s.query(Facility)
+        .options(joinedload(Facility.Meters))
+        .filter(Facility.FacilityID == facility_id)
+        .first()
+    )
+    if not facility:
+        raise HTTPException(status_code=404, detail="Facility not found")
 
-    facility = s.query(Facility).options(
-        joinedload(Facility.Meters).joinedload(getattr(Meter, consumption_attr))
-    ).filter(Facility.FacilityID == facility_id).first()
-
-    if not facility or not facility.Meters:
-        return 0.0
-
-    sum_meter = 0.0
-    meter_count = 0
+    meter_averages = []
     for meter in facility.Meters:
-        consumptions = getattr(meter, consumption_attr)
-        if not consumptions:
+        cons_model = DailyConsumption if meter.IsIot else MonthlyConsumption
+        latest_cons = (
+            s.query(cons_model)
+            .filter(cons_model.MeterID == meter.MeterID)
+            .order_by(cons_model.Date.desc())
+            .first()
+        )
+        if not latest_cons or not latest_cons.Data:
             continue
-        sum_consumption = 0.0
-        for cons in consumptions:
-            if cons.Data:
-                sum_consumption += sum(cons.Data) / len(cons.Data)
-        sum_meter += sum_consumption / len(consumptions)
-        meter_count += 1
+        avg_consumption = sum(latest_cons.Data) / len(latest_cons.Data)
+        meter_averages.append(avg_consumption)
 
-    return (sum_meter / meter_count) if meter_count > 0 else 0.0
+    return (sum(meter_averages) / len(meter_averages)) if meter_averages else 0.0
 
 @router.get("/averageMonthConsumption")
 async def average_month_consumption() -> list[float]:
     s = session()
-
     months = 12
     result = [0.0] * months
     result_counts = [0] * months
 
-    # TODO: Как будет IOT, прогнать через ИИ
-    # for m in s.query(Meter).filter(Meter.is_iot).all():
+    meters = (
+        s.query(Meter)
+        .filter(~Meter.IsIot)
+        .options(joinedload(Meter.MonthlyConsumptions))
+        .all()
+    )
 
-    for meter in s.query(Meter).all():
+    for meter in meters:
         for cons in meter.MonthlyConsumptions:
-            data = cons.Data
-            for i in range(0, len(data)):
-                result[i] += data[i]
-                result_counts[i] += 1
+            data = cons.Data or []
+            for i, val in enumerate(data):
+                if i < months:
+                    result[i] += val
+                    result_counts[i] += 1
 
-    for i in range(0, 12):
-        result[i] /= result_counts[i]
-
-    return result
+    averages = [
+        (result[i] / result_counts[i]) if result_counts[i] > 0 else 0.0
+        for i in range(months)
+    ]
+    return averages

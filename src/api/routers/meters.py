@@ -5,8 +5,8 @@ import fastapi
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
-from src.api.views.meter import Meter as AWMeter, MeterDetail, Geodata
-from src.db.schemes.client import Client
+from src.api.views.meter import Meter as AWMeter, MeterDetail, Geodata, Client
+from src.db.schemes.client import Client as DBClient
 from src.db.schemes.daily_consumption import DailyConsumption
 from src.db.schemes.monthly_consumption import MonthlyConsumption
 from src.db.schemes.facility import Facility
@@ -18,7 +18,7 @@ from src.db.session import session
 router = APIRouter(tags=["meters"])
 
 def _new_meter(s: Session, meter, consumption) -> AWMeter:
-    client: Client = meter.Client
+    client: DBClient = meter.Client
     facility: Facility = meter.Facility
     verified: Verified | None = s.query(Verified).filter(Verified.FacilityID == facility.FacilityID).first()
     tariff: Tariff = meter.Tariff
@@ -39,7 +39,7 @@ def _new_meter(s: Session, meter, consumption) -> AWMeter:
         client=Client(
             client_id=client.ClientID,
             name=f"{client.LastName} {client.FirstName} {client.FatherName}",
-            phone=client.Phone,
+            phone=str(client.Phone),
             email=client.Email
         ),
         geodata=Geodata(
@@ -52,34 +52,23 @@ def _new_meter(s: Session, meter, consumption) -> AWMeter:
         verified_status=verified.Grade.Name if verified is not None else None
     )
 
-def get_last_consumption(s: Session, meter_id: int) -> tuple[Type[DailyConsumption] | Type[MonthlyConsumption] | None, bool]:
-    is_daily = True
-
-    cons = (s.query(DailyConsumption)
-            .filter(DailyConsumption.MeterID == meter_id)
-            .order_by(DailyConsumption.Date.desc())
-            .first())
-
-    if not cons:
-        is_daily = False
-        cons = (s.query(MonthlyConsumption)
-                .filter(MonthlyConsumption.MeterID == meter_id)
-                .order_by(MonthlyConsumption.Date.desc())
-                .first())
-
-    return cons, is_daily
+def get_last_consumption(s: Session, meter_id: int, is_iot: bool) -> Type[DailyConsumption] | Type[MonthlyConsumption] | None:
+    return \
+        (s.query(MonthlyConsumption).filter(MonthlyConsumption.MeterID == meter_id).order_by(MonthlyConsumption.Date.desc()).first()) \
+        if is_iot else \
+        (s.query(DailyConsumption).filter(DailyConsumption.MeterID == meter_id).order_by(DailyConsumption.Date.desc()).first())
 
 @router.get("/meters/{meter_id}")
 async def api_meter(meter_id: int) -> AWMeter | str:
     s = session()
-    row = s.get(DBMeter, meter_id)
+    row: DBMeter = s.get(DBMeter, meter_id)
 
     if not row:
         raise HTTPException(status_code=404, detail="Meter not found")
 
-    cons, is_daily = get_last_consumption(s, meter_id)
+    cons = get_last_consumption(s, meter_id, row.IsIot)
 
-    return _new_meter(s, row, cons, is_daily)
+    return _new_meter(s, row, cons)
 
 @router.get("/meters")
 async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
@@ -94,10 +83,10 @@ async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
     if page < 1 or per_page < 1:
         raise fastapi.HTTPException(400)
 
-    meters = []
+    meters: List[AWMeter] = []
 
-    for row in (s.query(DBMeter).offset((page - 1) * per_page).limit(per_page)):
-        cons, is_daily = get_last_consumption(s, row.MeterID)
-        meters.append(_new_meter(s, row, cons, is_daily))
+    for row in s.query(DBMeter).offset((page - 1) * per_page).limit(per_page).all():
+        cons = get_last_consumption(s, row.MeterID, row.IsIot)
+        meters.append(_new_meter(s, row, cons))
 
     return meters
