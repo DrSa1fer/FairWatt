@@ -62,7 +62,3 @@ async def data_collect_avito(address: str) -> list[AvitoData]:
     ))
 
     return results
-
-@router.get("/panorama")
-async def data_collect_panorama(address: str) -> str:
-    return panorama_url_by_address(address, config.api_ya_geocode)
