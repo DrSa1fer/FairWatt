@@ -3,20 +3,22 @@ from src.api.models.open_data import LegalData, TwoGisData, AvitoData
 from src.config import config
 from src.core.data_collector.fns import check_legal_entity
 from src.core.data_collector.models import TwoGis, AdvertInfo
-from src.core.data_collector.two_gis import companies_at_address, generate_map_for_building
+from src.core.data_collector.ya_api import panorama_url_by_address
+from src.core.data_collector.two_gis import companies_at_address
+from src.core.data_collector.two_gis import generate_map_for_building
 from src.core.data_collector.avito import find_avito_adverts_by_address
 from src.core.ai_insights import check_adverts
 
-router = APIRouter()
+router = APIRouter(prefix="/dataCollect")
 
 
-@router.get("/data_collect/legal")
+@router.get("/legal")
 async def data_collect_legal(full_name: str) -> LegalData:
     is_legal_entity, legal_url = check_legal_entity(full_name) if len(full_name) != 0 else (False, None)
     return LegalData(url=legal_url)
 
 
-@router.get("/data_collect/2gis")
+@router.get("/2gis")
 async def data_collect_2gis(address: str) -> list[TwoGisData]:
     companies: list[TwoGis] = companies_at_address(address, config.gis_api)
 
@@ -31,7 +33,7 @@ async def data_collect_2gis(address: str) -> list[TwoGisData]:
     return results
 
 
-@router.get("/data_collect/avito")
+@router.get("/avito")
 async def data_collect_avito(address: str) -> list[AvitoData]:
     if len(address) == 0:
         return []
@@ -60,3 +62,7 @@ async def data_collect_avito(address: str) -> list[AvitoData]:
     ))
 
     return results
+
+@router.get("/panorama")
+async def data_collect_panorama(address: str) -> str:
+    return panorama_url_by_address(address, config.api_ya_geocode)
