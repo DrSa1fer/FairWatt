@@ -71,9 +71,6 @@ async def api_meter(meter_id: int) -> AWMeter | str:
 
     cons, is_daily = get_last_consumption(s, meter_id)
 
-    if not cons:
-         raise HTTPException(status_code=400, detail="Meter not found")
-
     return _new_meter(s, row, cons, is_daily)
 
 @router.get("/meters")

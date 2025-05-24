@@ -1,12 +1,9 @@
-from typing import List
 from fastapi import APIRouter, HTTPException
 
-from src.api.models.meter import Meter as MeterModel, MeterDetails
 from src.api.models.trip import Trip as AMTrip
-from src.api.views.trip import Trip as AWTrip
-from src.db.schemes.employee import Employee
+from src.api.views.trip import Trip as AWTrip, TripPoint as AWTripPoint
 from src.db.schemes.trip import Trip as DBTrip
-from src.db.schemes.trip_point import TripPoint
+from src.db.schemes.trip_point import TripPoint as DBTripPoint
 
 from src.db.session import session
 
@@ -17,12 +14,29 @@ async def trip(trip_id: int) -> AWTrip:
     s = session()
     t = s.get(DBTrip, trip_id)
 
-    if t
+    if not t:
+        raise HTTPException(status_code=404, detail="Trip not found")
 
+    db_points = s.query(DBTripPoint).filter(DBTripPoint.TripID == trip_id).all()
 
+    if not db_points:
+        raise HTTPException(status_code=404, detail="Trip not found")
 
+    points: list[AWTripPoint] = []
 
+    for point in db_points:
+        points.append(AWTripPoint(
+            facility_id=point.FacilityID,
+            is_first=point.IsFirst
+        ))
 
+    return AWTrip(
+        trip_id=trip_id,
+        employee_id=t.EmployeeID,
+        from_time=t.FromTime,
+        to_time=t.ToTime,
+        points=points,
+    )
 
 @router.post("/trip/new")
 async def new_trip(body : AMTrip) -> None:
@@ -35,7 +49,7 @@ async def new_trip(body : AMTrip) -> None:
     ))
 
     for i in body.points:
-        s.add(TripPoint(
+        s.add(DBTripPoint(
             TripID=body.trip_id,
             FacilityID=i.facility_id,
             IsFirst=i.is_first
