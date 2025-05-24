@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from uvicorn import run
 
 from src.api.routers import meters
-from src.db.session import global_init
+from src.db.schemes.tariff_kind import TariffKind
+from src.db.session import init, session, free
 
 def main():
-    global_init("sqlite:///db.db") # What the hell?
+    init("postgresql+psycopg2://postgres:1234@localhost:5432/FairWattDB") # locally
 
     app = FastAPI(
         title="FairWatt API",
@@ -14,5 +15,6 @@ def main():
     app.include_router(meters.router, prefix="/api/v1")
 
     run(app)
+    free()
 
 main()

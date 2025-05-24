@@ -1,25 +1,18 @@
-import sqlalchemy
+from sqlalchemy import Integer, String, ForeignKey, Boolean
 from sqlalchemy import Sequence
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column
 
-from src.db.session import SqlAlchemyBase
+from .__base__ import Base
 
 
-class Facility(SqlAlchemyBase):
+class Facility(Base):
     __tablename__ = 'Facility'
 
-    FacilityID = sqlalchemy.Column(sqlalchemy.Integer, Sequence("facility_seq"), primary_key=True)
+    FacilityKindID      = mapped_column(Integer, ForeignKey("FacilityKind.FacilityKindID"))
+    SettlementKindID    = mapped_column(Integer, ForeignKey("SettlementKind.SettlementKindID"))
 
-    FacilityKindID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("FacilityKind.FacilityKindID"))
-    FacilityKind = relationship('FacilityKind')
-
-    SettlementKindID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("SettlementKind.SettlementKindID"))
-    SettlementKind = relationship('SettlementKind')
-
-    Square = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    hasElectricHeating = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
-    hasElectricStove = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
-    Address = sqlalchemy.Column(sqlalchemy.String(length=50), nullable=False)
-
-    RegionID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Region.RegionID"))
-    Region = relationship('Region')
+    FacilityID          = mapped_column(Integer, Sequence("facility_seq"), primary_key=True)
+    FacilityKind        = relationship('FacilityKind')
+    SettlementKind      = relationship('SettlementKind')
+    Square              = mapped_column(Integer, nullable=True)
+    Address             = mapped_column(String(length=50), nullable=False)

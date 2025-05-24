@@ -1,15 +1,16 @@
-import sqlalchemy
+from sqlalchemy import Integer, Float, ForeignKey
 from sqlalchemy import Sequence
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column
 
-from src.db.session import SqlAlchemyBase
+from .__base__ import Base
 
 
-class Tariff(SqlAlchemyBase):
+class Tariff(Base):
     __tablename__ = 'Tariff'
 
-    TariffID = sqlalchemy.Column(sqlalchemy.Integer, Sequence("tariff_seq"), primary_key=True)
-    TariffKindID = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("TariffKind.TariffKindID"))
-    TariffKind = relationship('TariffKind')
-    Standard = sqlalchemy.Column(sqlalchemy.Float, nullable=False)
-    Price = sqlalchemy.Column(sqlalchemy.Float, nullable=False)
+    TariffKindID    = mapped_column(Integer, ForeignKey("TariffKind.TariffKindID"))
+
+    TariffID        = mapped_column(Integer, Sequence("tariff_seq"), primary_key=True)
+    TariffKind      = relationship('TariffKind')
+    Standard        = mapped_column(Float, nullable=False)
+    Price           = mapped_column(Float, nullable=False)

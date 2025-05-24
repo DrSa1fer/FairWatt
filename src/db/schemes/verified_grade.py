@@ -5,8 +5,8 @@ from sqlalchemy.orm import mapped_column
 from .__base__ import Base
 
 
-class TariffKind(Base):
-    __tablename__ = 'TariffKind'
+class VerifiedGrade(Base):
+    __tablename__ = 'VerifiedGrade'
 
-    TariffKindID    = mapped_column(Integer, Sequence("tariffKind_seq"), primary_key=True)
+    VerifiedGradeID = mapped_column(Integer, Sequence("verifiedGrade_seq"), primary_key=True)
     Name            = mapped_column(String(length=25), nullable=False)

@@ -1,12 +1,12 @@
-import sqlalchemy
+from sqlalchemy import Integer, String
 from sqlalchemy import Sequence
+from sqlalchemy.orm import mapped_column
 
-from src.db.session import SqlAlchemyBase
+from .__base__ import Base
 
 
-class SettlementKind(SqlAlchemyBase):
+class SettlementKind(Base):
     __tablename__ = 'SettlementKind'
 
-    SettlementKindID = sqlalchemy.Column(sqlalchemy.Integer, Sequence("settlementKind_seq"), primary_key=True)
-    Name = sqlalchemy.Column(sqlalchemy.String(length=50), nullable=False)
-    Addition = sqlalchemy.Column(sqlalchemy.Float, nullable=False)
+    SettlementKindID    = mapped_column(Integer, Sequence("settlementKind_seq"), primary_key=True)
+    Name                = mapped_column(String(length=50), nullable=False)

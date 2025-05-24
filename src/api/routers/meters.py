@@ -2,11 +2,10 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 
 from src.api.models.meter import Meter as MeterModel, MeterDetails
-from src.db.session import create_session
-from src.db.schemes.consumption import Consumption
+from src.db.session import session as db_session
+from src.db.schemes.daily_consumption import DailyConsumption as Consumption
 from src.db.schemes.facility import Facility
 from src.db.schemes.client import Client
-from src.db.schemes.region import Region
 from src.db.schemes.tariff import Tariff
 from src.db.schemes.meter import Meter
 
@@ -14,7 +13,7 @@ router = APIRouter()
 
 @router.get("/meter/{meter_id}")
 async def api_meter(meter_id: int) -> MeterModel:
-    session = create_session()
+    session = db_session()
     meter = session.get(Meter, meter_id)
     if not meter:
         raise HTTPException(status_code=404, detail="Meter not found")
@@ -22,7 +21,6 @@ async def api_meter(meter_id: int) -> MeterModel:
     client: Client = meter.Client
     facility: Facility = meter.Facility
     tariff: Tariff = meter.Tariff
-    region: Region = facility.Region
 
     consumption = (
                     session.query(Consumption)
@@ -39,7 +37,6 @@ async def api_meter(meter_id: int) -> MeterModel:
         lastConsumption = 0, # todo
         tariffName = tariff.TariffKind.Name,
         tariffPrice = tariff.Price,
-        region = region.Name,
         meterDetails = MeterDetails(
             square = facility.Square,
             hasElectricHeating = facility.hasElectricHeating,
@@ -52,7 +49,7 @@ async def api_meter(meter_id: int) -> MeterModel:
 
 @router.get("/meters")
 async def api_meters(page: int = 0, per_page: int = 10) -> List[MeterModel]:
-    session = create_session()
+    session = db_session()
 
     offset = (page - 1) * per_page
     meters = []
@@ -60,7 +57,6 @@ async def api_meters(page: int = 0, per_page: int = 10) -> List[MeterModel]:
         client: Client = meter.Client
         facility: Facility = meter.Facility
         tariff: Tariff = meter.Tariff
-        region: Region = facility.Region
         meters.append(
                 MeterModel(
                 id=meter.MeterID,
@@ -70,7 +66,6 @@ async def api_meters(page: int = 0, per_page: int = 10) -> List[MeterModel]:
                 lastConsumption=0,  # todo
                 tariffName=tariff.TariffKind.Name,
                 tariffPrice=tariff.Price,
-                region=region.Name,
                 meterDetails=MeterDetails(
                     square=facility.Square,
                     hasElectricHeating=facility.hasElectricHeating,
