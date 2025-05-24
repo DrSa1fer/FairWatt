@@ -18,3 +18,5 @@ class Facility(Base):
     Address             = mapped_column(String(length=150), nullable=False)
     Longitude           = mapped_column(Float, nullable=True)
     Latitude            = mapped_column(Float, nullable=True)
+
+    Meters = relationship("Meter", back_populates="facility")

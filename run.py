@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from uvicorn import run
 
-from src.api.routers import meters, employees, trips, data_collector
+from src.api.routers import meters, employees, trips, data_collector, statistics
 from src.config import config
 from src.db.session import init, dispose
 
@@ -18,6 +18,7 @@ def main():
     app.include_router(data_collector.router, prefix="/api/v1")
     app.include_router(meters.router, prefix="/api/v1")
     app.include_router(employees.router, prefix="/api/v1")
+    app.include_router(statistics.router, prefix="/api/v1")
 
     run(app, host=config.api_host, port=config.api_port, reload=False)
 

@@ -18,3 +18,6 @@ class Meter(Base):
     Tariff = relationship('Tariff')
     Client = relationship('Client')
 
+    DailyConsumptions = relationship("DailyConsumption", back_populates="meter")
+    MonthlyConsumptions = relationship("MonthlyConsumption", back_populates="meter")
+
