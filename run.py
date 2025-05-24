@@ -4,6 +4,10 @@ from uvicorn import run
 from src.api.routers import meters, employees, trips, data_collector
 from src.config import config
 from src.db.session import db_init, dispose, session
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 def main():
 
@@ -15,10 +19,13 @@ def main():
         description="🏔️ A project to analyze energy consumption by Elbrus team",
     )
 
+<<<<<<< Updated upstream
 
 
     app.include_router(trips.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")
+=======
+>>>>>>> Stashed changes
     app.include_router(meters.router, prefix="/api/v1")
     app.include_router(employees.router, prefix="/api/v1")
 

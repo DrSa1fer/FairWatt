@@ -11,6 +11,7 @@ from src.db.schemes.daily_consumption import DailyConsumption
 from src.db.schemes.monthly_consumption import MonthlyConsumption
 from src.db.schemes.facility import Facility
 from src.db.schemes.meter import Meter as DBMeter
+from src.db.schemes.tariff import Tariff
 from src.db.schemes.verified import Verified
 from src.db.session import session
 
@@ -20,7 +21,7 @@ def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
     client: Client = meter.Client
     facility: Facility = meter.Facility
     verified: Verified | None = s.query(Verified).filter(Verified.FacilityID == facility.FacilityID).first()
-    # tariff: Tariff = meter.Tariff
+    tariff: Tariff = meter.Tariff
 
     return AWMeter(
         meter_id=meter.MeterID,
@@ -32,7 +33,7 @@ def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
             resident_count=facility.Residents,
             room_count=facility.Rooms,
             square=facility.Square,
-            facility_type_name=facility.FacilityKind.Name
+            facility_type_name=facility.FacilityKind.Name,
         ),
         geodata=Geodata(
             longitude=facility.Longitude,
@@ -91,8 +92,5 @@ async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
     for row in (s.query(DBMeter).offset((page - 1) * per_page).limit(per_page)):
         cons, is_daily = get_last_consumption(s, row.MeterID)
         meters.append(_new_meter(s, row, cons, is_daily))
-
-    if not meters:
-        raise fastapi.HTTPException(404)
 
     return meters

@@ -11,10 +11,10 @@ class Meter(Base):
     MeterID = sqlalchemy.Column(sqlalchemy.Integer, Sequence("meter_seq"), primary_key=True)
 
     FacilityID = mapped_column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Facility.FacilityID"))
-    # TariffID = mapped_column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Tariff.TariffID"))
+    TariffID = mapped_column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Tariff.TariffID"))
     ClientID = mapped_column(sqlalchemy.Integer, sqlalchemy.ForeignKey("Client.ClientID"))
 
     Facility = relationship('Facility')
-    # Tariff = relationship('Tariff')
+    Tariff = relationship('Tariff')
     Client = relationship('Client')
 

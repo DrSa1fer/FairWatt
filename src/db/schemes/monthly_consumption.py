@@ -11,5 +11,6 @@ class MonthlyConsumption(Base):
 
     MonthlyConsumptionID = mapped_column(Integer, Sequence("monthlyConsumption_seq"), primary_key=True)
     Meter = relationship('Meter')
+    Rating = mapped_column(Float, nullable=True)
     Date = mapped_column(Date, primary_key=True)
     Data = mapped_column(ARRAY(Float))
