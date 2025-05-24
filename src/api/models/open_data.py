@@ -1,6 +1,14 @@
 from pydantic import BaseModel
 
-class OpenData(BaseModel):
-    avito_link: str | None
-    is_legal_entity: bool
-    is_bunch: bool
+class LegalData(BaseModel):
+    url: str | None
+
+class TwoGisData(BaseModel):
+    url: str
+    name: str
+    purpose_name: str | None
+
+class AvitoData(BaseModel):
+    url: str
+    title: str
+    description: str

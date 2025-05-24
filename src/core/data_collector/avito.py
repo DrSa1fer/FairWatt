@@ -1,5 +1,5 @@
 from googlesearch import search
-from models import AdvertInfo
+from .models import AdvertInfo
 
 def find_avito_adverts_by_address(address: str, max_results_to_check: int) -> list[AdvertInfo]:
     """

@@ -18,7 +18,9 @@ TYPE_ = Literal["branch",
 
 class TwoGis(BaseModel):
     type_ : TYPE_
-    purpose_name: str
+    name: str
+    purpose_name: str | None
+    building_id: str
 
 class AdvertInfo(BaseModel):
     title: str

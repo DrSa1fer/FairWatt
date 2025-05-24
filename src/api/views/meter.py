@@ -6,6 +6,8 @@ class MeterDetail(BaseModel):
     room_count          : Optional[int]
     square              : Optional[float]
     facility_type_name  : Optional[str]
+    tariff_price        : Optional[float]
+    tariff_type_name    : Optional[str]
 
 class Geodata(BaseModel):
     latitude : float

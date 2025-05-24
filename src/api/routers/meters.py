@@ -34,6 +34,8 @@ def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
             room_count=facility.Rooms,
             square=facility.Square,
             facility_type_name=facility.FacilityKind.Name,
+            tariff_price=tariff.Price,
+            tariff_type_name=tariff.TariffKind.Name
         ),
         geodata=Geodata(
             longitude=facility.Longitude,
@@ -81,7 +83,7 @@ async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
 
     try:
         s = session()
-    except RuntimeError as e:
+    except RuntimeError:
         raise fastapi.HTTPException(500)
 
     if page < 1 or per_page < 1:

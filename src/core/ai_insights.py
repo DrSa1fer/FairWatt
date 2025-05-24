@@ -1,7 +1,7 @@
 from textwrap import dedent
 
 from openai import OpenAI
-from data_collector.models import AdvertInfo
+from .data_collector.models import AdvertInfo
 from json import dumps
 
 def check_adverts(address: str, adverts: list[AdvertInfo], api_key: str, base_url: str, model: str) -> AdvertInfo | None:
@@ -53,10 +53,10 @@ s
 
     try:
         index = int(response.choices[0].message.content)
-    except TypeError as exc:
-        return  # TODO: Ошибка
+    except TypeError:
+        return None # TODO: Ошибка
 
     if index == -1:
-        return
+        return None
 
     return adverts[index]

@@ -1,10 +1,62 @@
 from fastapi import APIRouter
-from src.api.models.open_data import OpenData
+from src.api.models.open_data import LegalData, TwoGisData, AvitoData
 from src.config import config
+from src.core.data_collector.fns import check_legal_entity
+from src.core.data_collector.models import TwoGis, AdvertInfo
+from src.core.data_collector.two_gis import companies_at_address, generate_map_for_building
+from src.core.data_collector.avito import find_avito_adverts_by_address
+from src.core.ai_insights import check_adverts
 
 router = APIRouter()
 
-@router.get("/dataCollect")
-async def data_collect(full_name: str, address: str) -> OpenData:
-    pass
 
+@router.get("/data_collect/legal")
+async def data_collect_legal(full_name: str) -> LegalData:
+    is_legal_entity, legal_url = check_legal_entity(full_name) if len(full_name) != 0 else (False, None)
+    return LegalData(url=legal_url)
+
+
+@router.get("/data_collect/2gis")
+async def data_collect_2gis(address: str) -> list[TwoGisData]:
+    companies: list[TwoGis] = companies_at_address(address, config.gis_api)
+
+    results: list[TwoGisData] = []
+
+    for company in companies:
+        results.append(TwoGisData(
+            url=generate_map_for_building(company.building_id),
+            name=company.name,
+            purpose_name=company.purpose_name
+        ))
+    return results
+
+
+@router.get("/data_collect/avito")
+async def data_collect_avito(address: str) -> list[AvitoData]:
+    if len(address) == 0:
+        return []
+
+    adverts: list[AdvertInfo] = find_avito_adverts_by_address(address, 10)
+
+    filtered_advert = check_adverts(address, adverts, config.ai_api, config.ai_base_url, config.ai_model)
+
+    results: list[AvitoData] = []
+
+    if not filtered_advert: # Если что-то не так с ИИ
+        for advert in adverts:
+            results.append(AvitoData(
+                url=advert.url,
+                title=advert.title,
+                description=advert.description,
+            ))
+
+        return results
+
+
+    results.append(AvitoData(
+        url=filtered_advert.url,
+        title=filtered_advert.title,
+        description=filtered_advert.description,
+    ))
+
+    return results
