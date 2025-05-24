@@ -1,22 +1,24 @@
+from textwrap import dedent
+
 from openai import OpenAI
 from data_collector.models import AdvertInfo
-from ast import literal_eval
 from json import dumps
-import collections.abc
 
-def check_adverts(address: str, adverts: list[AdvertInfo], api_key: str) -> list[AdvertInfo]:
+def check_adverts(address: str, adverts: list[AdvertInfo], api_key: str, base_url: str, model: str) -> AdvertInfo | None:
     """
     Проверка найденных по адресу объявлений на коммерческую деятельность
     :param address: Полный адрес
     :param adverts: Найденные объявления
     :param api_key: API ключ
-
+    :param base_url: API url
+    :param model: Наименование LLM модели
+s
     :return list[AdvertInfo]: Массив проверенных объявлений
     """
 
     client = OpenAI(
         api_key=api_key,
-        base_url="https://api.aitunnel.ru/v1/"
+        base_url=base_url
     )
 
     input_data = {
@@ -35,30 +37,26 @@ def check_adverts(address: str, adverts: list[AdvertInfo], api_key: str) -> list
     response = client.chat.completions.create(
         messages=[
         {"role": "user", "content":
-"""
-На вход тебе поступает адрес и краткая информация о найденных объявлениях на этом адресе.
-В формате `{address: "адрес", "adverts": [{"title": "Заголовок", "description": "Часть описания", "url": "Ссылка"}]}`.
-Твоя задача проверить найденные объявления на наличие коммерческой деятельности, отсортировав обычную продажу товаров.
-Так же нужно проверить точно ли данные объявления относятся к заданному адресу. Адрес может содержаться в заголовке, части описания и ссылке.
-На выход ты должен отправить индексы `adverts` в которых ведётся коммерческая деятельность и они с большой вероятностью относятся к адресу в формате `[0, 3, ..]`.
-При любом исходе ты должен отправить массив в python формате `[0, 3, ..]`, без любых комментариев.
-"""},
+        dedent("""\
+            Твоя задача обнаружить объекты, осуществляющие коммерческую детяльности. На вход тебе поступает адрес и краткая информация о найденных объявлениях на этом адресе.
+            Например `{address: "<адрес>", "adverts": [{"title": "<Заголовок>", "description": "<Часть описания>", "url": "<Ссылка>"}]}`.
+            Тебе необходимо проверить найденные объявления на подозрения в коммерческой деятельности на этом адресе, отсортировав обычную продажу товаров и неподходящие адреса.
+            Так же нужно проверить точно ли данные объявления относятся к заданному адресу. Адрес может содержаться в заголовке, части описания и ссылке.
+            В ответе ты должен отправить числовой индекс для `adverts`, где есть подозрения на коммерческую деятельность и они с большой вероятностью относятся к адресу в формате
+            числа `1`, и НИКАК ИНАЧЕ!
+            При любом исходе ты должен ответь одним числом, без любых комментариев. Если ничего не удалось найти или что-то пошло не так верни `-1`.
+        """)},
         {"role": "user", "content": dumps(input_data)}],
-        model="deepseek-chat-v3-0324",
+        model=model,
         max_tokens=50000
     )
 
     try:
-        indexes_array = literal_eval(str(response.choices[0].message.content))
-    except SyntaxError:
-        return adverts  # TODO: Ошибка
+        index = int(response.choices[0].message.content)
+    except TypeError as exc:
+        return  # TODO: Ошибка
 
-    if isinstance(indexes_array, collections.abc.Sequence):
-        return adverts # TODO: Ошибка
+    if index == -1:
+        return
 
-    result: list[AdvertInfo] = []
-
-    for index in indexes_array:
-        result.append(adverts[index])
-
-    return result
+    return adverts[index]

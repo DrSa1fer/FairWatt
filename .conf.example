@@ -10,3 +10,9 @@ gis_api =
 
 # More: https://yandex.ru/maps-api/docs/geocoder-api/index.html
 api_ya_geocode =
+
+# AI agent
+# Compatible with OpenAI API
+ai_api   =
+ai_base_url =
+ai_model = deepseek-chat-v3-0324

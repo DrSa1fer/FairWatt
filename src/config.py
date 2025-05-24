@@ -6,5 +6,7 @@ class Settings(BaseSettings):
     api_port: int
     gis_api: str
     api_ya_geocode: str
+    ai_api: str
+    ai_base_url: str
 
     model_config = SettingsConfigDict(env_file='.conf', env_file_encoding='utf-8')
