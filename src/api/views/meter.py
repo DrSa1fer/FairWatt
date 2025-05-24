@@ -15,7 +15,7 @@ class Meter(BaseModel):
     meter_id: int
     facility_id: int
     name:  Optional[str]
-    rating:  Optional[int]
+    rating:  Optional[float]
     address:  Optional[str]
 
     meter_details : MeterDetail

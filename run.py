@@ -2,10 +2,7 @@ from fastapi import FastAPI
 from uvicorn import run
 
 from src.config import Settings
-from src.api.routers import meters
-from src.api.routers import employees
 from src.db.session import db_init, dispose, session
-
 
 def main():
     config = Settings()
