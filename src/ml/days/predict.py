@@ -1,35 +1,38 @@
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel
 from sklearn.pipeline import Pipeline
 
 from .data.ml_jb import load_model
 from .data.ml_jb import load_scaler
-from .features.build_features import build_features
 
+class Data(BaseModel):
+    residentsCount  : int | None
+    roomsCount      : int | None
+    totalArea       : float | None
+    consumption     : list[float | None]
 
-def predict(data : list) -> list[float]:
-    X, _ = build_features(data)
+def _build_features(data: list[Data]) -> np.array:
+    result = dict()
 
-    scaler = load_scaler()
-    model = load_model()
+    result["Residents"] = [d.residentsCount for d in data]
+    result["Residents_has"] = [d.residentsCount is not None for d in data]
 
-    pipeline = Pipeline(steps =[
-        ("preprocessor", scaler),
-        ("regressor", model)
-    ])
+    result["Rooms"] = [d.roomsCount for d in data]
+    result["Rooms_has"] = [d.roomsCount is not None for d in data]
 
-    return pipeline.predict(X)
+    result["Square"] = [d.totalArea for d in data]
+    result["Square_has"] = [d.totalArea is not None for d in data]
 
-def retrain() -> None:
-    scaler = load_scaler()
-    model = load_model()
+    for i in range(0, 24):
+        result[f"consumption_{i+1}"]      = [d.consumption[i] for d in data]
+        result[f"consumption_{i+1}_has"]  = [d.consumption[i] is not None for d in data]
 
-    X, y = _load_dataset()
+    return pd.DataFrame(result).to_numpy()
 
-    model = Pipeline(steps=[
-        ("preprocessor", scaler),
-        ("regressor", model)
-    ])
+def predict(data : list[Data]) -> list[float]:
+    return Pipeline(steps =[
+        ("preprocessor", load_scaler()),
+        ("regressor", load_model())
+    ]).predict(_build_features(data))
 
-    model.fit(X, y)
-
-    store_scaler(scaler)
-    store_model(model)

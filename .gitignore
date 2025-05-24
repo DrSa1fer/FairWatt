@@ -13,3 +13,6 @@ dmypy.json
 
 .vscode/
 .idea/
+
+
+*.joblib

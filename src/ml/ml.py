@@ -1,17 +1,12 @@
+from days.predict import predict as dp, Data as dd
 from months.predict import predict as mp, Data as md
 
 
-class Hour():
+class Day(dd):
     pass
 
-def predict_by_hours(data : list[dict]) -> list[float]:
-    pass
-
-class Day():
-    pass
-
-def predict_by_days(data : list[dict]) -> list[float]:
-    pass
+def predict_by_days(data : list[Day]) -> list[float]:
+    return dp(data)
 
 class Month(md):
     pass
