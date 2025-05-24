@@ -8,7 +8,7 @@ class TripPoint(BaseModel):
 class Trip(BaseModel):
     trip_id: int
     employee_id: int
-    from_time: datetime
-    to_time: datetime
+    from_time: datetime | None
+    to_time: datetime | None
     points : list[TripPoint]
 

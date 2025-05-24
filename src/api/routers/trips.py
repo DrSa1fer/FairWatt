@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
 
 from src.api.models.trip import Trip as AMTrip
@@ -7,9 +8,9 @@ from src.db.schemes.trip_point import TripPoint as DBTripPoint
 
 from src.db.session import session
 
-router = APIRouter()
+router = APIRouter(prefix="/trips", tags=["trips"])
 
-@router.get("/trip/{trip_id}")
+@router.get("/getTrip")
 async def trip(trip_id: int) -> AWTrip:
     s = session()
     t = s.get(DBTrip, trip_id)
@@ -38,7 +39,30 @@ async def trip(trip_id: int) -> AWTrip:
         points=points,
     )
 
-@router.post("/trip/new")
+@router.put("/updateStartTime")
+async def start_update(trip_id: int, start_time: datetime):
+    s = session()
+    t = s.get(DBTrip, trip_id)
+
+    if not t:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    t.StartTime = start_time
+    s.commit()
+
+@router.put("/updateEndTime")
+async def end_update(trip_id: int, end_time: datetime):
+    s = session()
+    t = s.get(DBTrip, trip_id)
+
+    if not t:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    t.ToTime = end_time
+    s.commit()
+
+
+@router.post("/create")
 async def new_trip(body : AMTrip) -> None:
     s = session()
 
