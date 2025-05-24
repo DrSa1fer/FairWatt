@@ -14,7 +14,7 @@ from src.db.schemes.meter import Meter as DBMeter
 from src.db.schemes.verified import Verified
 from src.db.session import session
 
-router = APIRouter()
+router = APIRouter(tags=["meters"])
 
 def _new_meter(s: Session, meter, consumption, is_daily) -> AWMeter:
     client: Client = meter.Client
@@ -61,7 +61,7 @@ def get_last_consumption(s: Session, meter_id: int) -> tuple[Type[DailyConsumpti
 
     return cons, is_daily
 
-@router.get("/meter/{meter_id}")
+@router.get("/meter")
 async def api_meter(meter_id: int) -> AWMeter | str:
     s = session()
     row = s.get(DBMeter, meter_id)

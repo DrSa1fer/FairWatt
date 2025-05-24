@@ -8,9 +8,9 @@ from src.db.schemes.trip_point import TripPoint as DBTripPoint
 
 from src.db.session import session
 
-router = APIRouter(prefix="/trips", tags=["trips"])
+router = APIRouter(tags=["trips"])
 
-@router.get("/getTrip")
+@router.get("/trip")
 async def trip(trip_id: int) -> AWTrip:
     s = session()
     t = s.get(DBTrip, trip_id)
@@ -39,7 +39,7 @@ async def trip(trip_id: int) -> AWTrip:
         points=points,
     )
 
-@router.put("/updateStartTime")
+@router.put("/updateTripStartTime")
 async def start_update(trip_id: int, start_time: datetime):
     s = session()
     t = s.get(DBTrip, trip_id)
@@ -50,7 +50,7 @@ async def start_update(trip_id: int, start_time: datetime):
     t.StartTime = start_time
     s.commit()
 
-@router.put("/updateEndTime")
+@router.put("/updateTripEndTime")
 async def end_update(trip_id: int, end_time: datetime):
     s = session()
     t = s.get(DBTrip, trip_id)
@@ -62,7 +62,7 @@ async def end_update(trip_id: int, end_time: datetime):
     s.commit()
 
 
-@router.post("/create")
+@router.post("/createTrip")
 async def new_trip(body : AMTrip) -> None:
     s = session()
 
