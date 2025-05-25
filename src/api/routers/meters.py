@@ -80,7 +80,6 @@ async def api_meter(meter_id: int) -> AWMeter:
 
     return _new_meter(s, row, tmp.first())
 
-
 @router.get("/")
 @router.get("/list")
 async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
@@ -106,3 +105,21 @@ async def api_meters(page: int = 1, per_page: int = 10) -> List[AWMeter]:
         meters.append(_new_meter(s, row, tmp.first()))
 
     return meters
+
+
+
+
+@router.put("/note")
+def update_note(meter_id : int, notes : str):
+    try:
+        s = session()
+    except RuntimeError:
+        raise fastapi.HTTPException(500)
+
+    tmp = s.get(DBMeter, meter_id)
+
+    if not tmp:
+        raise fastapi.HTTPException(404)
+
+    tmp.Notes = notes
+    s.commit()

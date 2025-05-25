@@ -67,9 +67,7 @@ async def start_update(trip_id: int, start_time: Optional[datetime] = None, end_
 @router.post("/new")
 async def new_trip(body : AMTrip) -> None:
     s = session()
-
-    print(body)
-
+    
     tmp = DBTrip(
         EmployeeID=body.employee_id,
         FromTime=body.from_time,
@@ -77,17 +75,22 @@ async def new_trip(body : AMTrip) -> None:
     )
 
     s.add(tmp)
-    s.commit()
-    s.refresh(tmp)
 
-    for i in body.points:
-        s.add(DBTripPoint(
-            TripID=tmp.TripID,
-            FacilityID=i.facility_id,
-            IsFirst=i.is_first
-        ))
+    try:
+        s.commit()
+        s.refresh(tmp)
 
-    s.commit()
+        for i in body.points:
+            s.add(DBTripPoint(
+                TripID=tmp.TripID,
+                FacilityID=i.facility_id,
+                IsFirst=i.is_first
+            ))
+
+        s.commit()
+    except:
+        s.rollback()
+        raise fastapi.HTTPException(418)
 
 
 @router.get("/actives")
