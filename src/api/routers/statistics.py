@@ -18,7 +18,7 @@ router = APIRouter(tags=["statistics"])
 @router.get("/questionableClients")
 async def questionable_client_count() -> int:
     # TODO: Проверить имя в БД
-    grade_id = session().query(VerifiedGrade).filter(VerifiedGrade.Name == "Коммерческое").fisrt().VerifiedGradeID
+    grade_id = session().query(VerifiedGrade).filter(VerifiedGrade.Name == "Коммерческое").first().VerifiedGradeID
 
     return (session()
             .query(Client)

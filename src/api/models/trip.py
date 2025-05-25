@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ class TripPoint(BaseModel):
 
 class Trip(BaseModel):
     employee_id: int
-    from_time : datetime
-    to_time : datetime
+    from_time : Optional[datetime]
+    to_time : Optional[datetime]
     points : list[TripPoint]
 

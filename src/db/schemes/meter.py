@@ -19,6 +19,6 @@ class Meter(Base):
     Client = relationship('Client')
     IsIot = mapped_column(Boolean)
 
-    # DailyConsumptions = relationship("DailyConsumption", back_populates="Meter")
-    # MonthlyConsumptions = relationship("MonthlyConsumption", back_populates="Meter")
+    DailyConsumptions = relationship("DailyConsumption", back_populates="Meter")
+    MonthlyConsumptions = relationship("MonthlyConsumption", back_populates="Meter")
 
