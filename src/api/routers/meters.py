@@ -32,6 +32,7 @@ def _new_meter(s: Session, meter : AWMeter, consumption) -> AWMeter:
         facility_id=facility.FacilityID,
         rating=100 - (client.Rating * 100),
         address=facility.Address.strip(),
+        notes=meter.Notes,
         meter_details=MeterDetail(
             resident_count=facility.Residents,
             room_count=facility.Rooms,

@@ -34,3 +34,4 @@ class Meter(BaseModel):
     geodata         : Optional[Geodata]
     verified_status : Optional[str]
     is_first        : Optional[bool]
+    notes           : Optional[str]

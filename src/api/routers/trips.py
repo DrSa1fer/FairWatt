@@ -88,3 +88,41 @@ async def new_trip(body : AMTrip) -> None:
         ))
 
     s.commit()
+
+
+@router.get("/actives")
+def actives_trips() -> list[AWTrip]:
+    try:
+        s = session()
+    except:
+        raise fastapi.HTTPException(500)
+
+
+    trips = []
+
+    for tmp in s.query(DBTrip).filter(DBTrip.ToTime is None).all():
+        if not tmp:
+            raise HTTPException(status_code=404, detail="Trip not found")
+
+        points = s.query(DBTripPoint).filter(DBTripPoint.TripID == tmp.TripID).all()
+
+        if not len(points):
+            raise HTTPException(status_code=405, detail="Trip points missing")
+
+        points: list[AWTripPoint] = []
+
+        for point in points:
+            points.append(AWTripPoint(
+                facility_id=point.FacilityID,
+                is_first=point.IsFirst
+            ))
+
+        trips.append(AWTrip(
+            trip_id=tmp.TripID,
+            employee_id=tmp.EmployeeID,
+            from_time=tmp.FromTime,
+            to_time=tmp.ToTime,
+            points=points,
+        ))
+
+    return trips

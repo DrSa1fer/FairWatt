@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy import text
 
 from sqlalchemy.orm import joinedload
 
@@ -32,64 +33,42 @@ async def questionable_client_count() -> int:
 
 
 @router.get("/averageFacilityConsumption")
-async def average_facility_consumption() -> float:
-    s = session()
+async def average_facility_consumption(is_iot : bool = False) -> float:
+    result = session().execute(text((
+    f"""
+        SELECT (SELECT SUM(s) FROM UNNEST(c."Data") s) as x 
+        FROM {'"DailyConsumption"' if not is_iot else '"MonthlyConsumption"'} c
+        JOIN "Meter" m ON c."MeterID" = m."MeterID"
+        JOIN "Facility" f ON f."FacilityID" = m."FacilityID"
+        JOIN "FacilityKind" k ON k."FacilityKindID" = f."FacilityKindID"
+        WHERE k."Name" = 'Частный';
+    """
+    ))).first()
 
-    facilities = s.query(Facility).options(joinedload(Facility.Meters)).all()
-    facility_averages = []
+    if result is None:
+        return 0
 
-    for facility in facilities:
-        meters = facility.Meters or []
-        meter_averages = []
-
-        for meter in meters:
-            cons_model = DailyConsumption if meter.IsIot else MonthlyConsumption
-            latest_cons = (
-                s.query(cons_model)
-                .filter(cons_model.MeterID == meter.MeterID)
-                .order_by(cons_model.Date.desc())
-                .first()
-            )
-            if not latest_cons:
-                continue
-            avg_consumption = sum(latest_cons.Data) / len(latest_cons.Data)
-            meter_averages.append(avg_consumption)
-
-        if meter_averages:
-            facility_averages.append(sum(meter_averages) / len(meter_averages))
-
-    return (sum(facility_averages) / len(facility_averages)) if facility_averages else 0.0
+    return result[0]
 
 
+@router.get("/averageFlatConsumption/")
+async def average_flat_consumption(is_iot : bool = False) -> float:
+    result = session().execute(text((
+    f"""
+        SELECT (SELECT SUM(s) FROM UNNEST(c."Data") s) as x 
+        FROM {'"DailyConsumption"' if not is_iot else '"MonthlyConsumption"'} c
+        JOIN "Meter" m ON c."MeterID" = m."MeterID"
+        JOIN "Facility" f ON f."FacilityID" = m."FacilityID"
+        JOIN "FacilityKind" k ON k."FacilityKindID" = f."FacilityKindID"
+        WHERE k."Name" = 'Многоквартирный';
+    """
+    ))).first()
 
-@router.get("/averageFlatConsumption/{facility_id}")
-async def average_flat_consumption(facility_id: int) -> float:
-    s = session()
+    if result is None:
+        return 0
 
-    facility = (
-        s.query(Facility)
-        .options(joinedload(Facility.Meters))
-        .filter(Facility.FacilityID == facility_id)
-        .first()
-    )
-    if not facility:
-        raise HTTPException(status_code=404, detail="Facility not found")
+    return result[0]
 
-    meter_averages = []
-    for meter in facility.Meters:
-        cons_model = DailyConsumption if meter.IsIot else MonthlyConsumption
-        latest_cons = (
-            s.query(cons_model)
-            .filter(cons_model.MeterID == meter.MeterID)
-            .order_by(cons_model.Date.desc())
-            .first()
-        )
-        if not latest_cons or not latest_cons.Data:
-            continue
-        avg_consumption = sum(latest_cons.Data) / len(latest_cons.Data)
-        meter_averages.append(avg_consumption)
-
-    return (sum(meter_averages) / len(meter_averages)) if meter_averages else 0.0
 
 @router.get("/averageMonthConsumption")
 async def average_month_consumption() -> list[float]:
