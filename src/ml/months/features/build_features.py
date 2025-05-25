@@ -4,6 +4,12 @@ import pandas as pd
 def build_features(data : list[dict[str, str | int | float | dict[str, int]]]) -> (np.array, pd.DataFrame):
     result = dict()
 
+    result["buildingType"] = [
+        0 if d["buildingType"] == "Частный" else
+        1 if d["buildingType"] == "Прочий" else
+        2 for d in data
+    ]
+
     for i in ["residentsCount", "totalArea", "roomsCount"]:
         result[f"{i}"] = [d.get(i, 0) for d in data]
         result[f"{i}_has"] = [d.get(i, None) is not None for d in data]
@@ -14,4 +20,4 @@ def build_features(data : list[dict[str, str | int | float | dict[str, int]]]) -
 
     df = pd.DataFrame(result)
 
-    return df.to_numpy(), np.array([d["score"] for d in data]).ravel()
+    return df.to_numpy(), np.array([d["isCommercial"] for d in data]).ravel()

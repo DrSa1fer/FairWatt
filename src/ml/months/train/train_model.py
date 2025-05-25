@@ -14,7 +14,7 @@ from src.ml.months.features.build_features import build_features
 
 
 def _load_dataset() -> (np.array, pd.DataFrame):
-    with open(Path("./months/data/train/rate_train.json"), "r") as f:
+    with open(Path("./months/data/train/raw_train.json"), "r") as f:
         data = json.load(f)
 
     return build_features(data)
