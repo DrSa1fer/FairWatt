@@ -17,7 +17,6 @@ router = APIRouter(tags=["statistics"])
 
 @router.get("/questionableClients")
 async def questionable_client_count() -> int:
-    # TODO: Проверить имя в БД
     grade_id = session().query(VerifiedGrade).filter(VerifiedGrade.Name == "Коммерческое").first().VerifiedGradeID
 
     return (session()
@@ -51,7 +50,7 @@ async def average_facility_consumption(is_iot : bool = False) -> float:
     return result[0]
 
 
-@router.get("/averageFlatConsumption/")
+@router.get("/averageFlatConsumption")
 async def average_flat_consumption(is_iot : bool = False) -> float:
     result = session().execute(text((
     f"""

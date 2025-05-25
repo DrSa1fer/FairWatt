@@ -31,21 +31,21 @@ def _new_meter(s: Session, meter : AWMeter, consumption) -> AWMeter:
         meter_id=meter.MeterID,
         facility_id=facility.FacilityID,
         rating=100 - (client.Rating * 100),
-        address=facility.Address.strip(),
+        address=facility.Address.rstrip(),
         notes=meter.Notes,
         meter_details=MeterDetail(
             resident_count=facility.Residents,
             room_count=facility.Rooms,
             square=facility.Square,
-            facility_type_name=facility.FacilityKind.Name.strip(),
+            facility_type_name=facility.FacilityKind.Name.rstrip(),
             tariff_price=tariff.Price,
-            tariff_type_name=tariff.TariffKind.Name.strip()
+            tariff_type_name=tariff.TariffKind.Name.rstrip()
         ),
         client=Client(
             client_id=client.ClientID,
             name=f"{client.LastName} {client.FirstName} {client.FatherName}",
             phone=client.Phone,
-            email=client.Email
+            email=client.Email.rstrip(),
         ),
         geodata=Geodata(
             longitude=facility.Longitude,
