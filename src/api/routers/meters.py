@@ -30,7 +30,7 @@ def _new_meter(s: Session, meter : AWMeter, consumption) -> AWMeter:
     return AWMeter(
         meter_id=meter.MeterID,
         facility_id=facility.FacilityID,
-        rating=100 - (client.Rating * 100),
+        rating=client.Rating,
         address=facility.Address.rstrip(),
         notes=meter.Notes,
         meter_details=MeterDetail(

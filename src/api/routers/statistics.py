@@ -7,9 +7,6 @@ from src.db.schemes.client import Client
 from src.db.schemes.meter import Meter
 from src.db.schemes.verified import Verified
 from src.db.schemes.verified_grade import VerifiedGrade
-from src.db.schemes.facility import Facility
-from src.db.schemes.daily_consumption import DailyConsumption
-from src.db.schemes.monthly_consumption import MonthlyConsumption
 
 from src.db.session import session
 
